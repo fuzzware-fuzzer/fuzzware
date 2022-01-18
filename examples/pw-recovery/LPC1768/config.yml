@@ -1,0 +1,19 @@
+include:
+- ./../../configs/hw/cortexm_memory.yml
+- ./syms.yml
+
+memory_map:
+  sram:
+    base_addr: 0x10000000
+    permissions: rwx
+    size: 0x8000
+  text:
+    base_addr: 0x0
+    file: ./basic_exercises.bin
+    permissions: r-x
+    size: 0x800000
+    is_entry: True
+
+use_systick: false
+use_nvic: false
+use_timers: false

@@ -1,0 +1,6 @@
+[submodule "pipeline"]
+	path = pipeline
+	url = ../fuzzware-pipeline
+[submodule "emulator"]
+	path = emulator
+	url = ../fuzzware-emulator

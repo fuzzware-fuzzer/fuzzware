@@ -1,0 +1,19 @@
+include:
+- ./../../configs/hw/cortexm_memory.yml
+- ./syms.yml
+
+memory_map:
+  mmio_information:
+    base_addr: 0xfe00000
+    permissions: rw-
+    size: 0x9000
+  text:
+    base_addr: 0x0
+    file: ./basic_exercises.bin
+    permissions: r-x
+    size: 0x800000
+    is_entry: True
+
+use_nvic: false
+use_timers: false
+use_systick: false

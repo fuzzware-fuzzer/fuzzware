@@ -1,0 +1,8 @@
+include:
+  - ./../cortexm_memory.yml
+
+memory_map:
+  rom: {base_addr: 0x0, file: '*.bin',
+    permissions: r-x, size: 0x40000, is_entry: True}
+  mmio_OTPs: {base_addr: 0x00800000, permissions: r--, size: 0x7000}
+  mmio_IOBUS: {base_addr: 0x60000000, permissions: rw-, size: 0x1000}

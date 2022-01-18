@@ -1,0 +1,9 @@
+include:
+  - ./../cortexm_memory.yml
+
+memory_map:
+  rom: {base_addr: 0x00000000, file: '*.bin',
+    permissions: r-x, size: 0x800000}
+  ivt: {base_addr: 0x08000000, file: '*.bin',
+    permissions: r-x, size: 0x800000, is_entry: True}
+  bss: {base_addr: 0x1fff0000, permissions: rW-, size: 0x10000}

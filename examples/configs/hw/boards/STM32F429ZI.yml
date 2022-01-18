@@ -1,0 +1,10 @@
+include:
+  - ./../cortexm_memory.yml
+
+memory_map:
+  ivt: {base_addr: 0x0,
+    permissions: rwx, size: 0x800000}
+  # file: '*.bin',
+  flash: {base_addr: 0x08000000, file: '*.bin',
+    permissions: r-x, size: 0x800000, is_entry: True}
+  mmio_FMC: {base_addr: 0xA0000000, permissions: rw-, size: 0x4000}

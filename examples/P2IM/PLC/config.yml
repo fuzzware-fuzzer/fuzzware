@@ -1,0 +1,26 @@
+include:
+  - ./syms.yml
+
+interrupt_triggers:
+  trigger:
+    every_nth_tick: 0x3e8
+    fuzz_mode: round_robin
+
+memory_map:
+  mmio: {base_addr:  0x40000000, size: 0x20000000, permissions: rw-}
+  nvic: {base_addr:  0xe0000000, size: 0x10000000, permissions: rw-}
+  irq_ret: {base_addr: 0xfffff000, size: 0x1000, permissions: --x}
+
+  zero:
+    base_addr: 0x00000000
+    permissions: rw-
+    size: 0x1000
+  ram:
+    base_addr: 0x20000000
+    permissions: rw-
+    size: 0x40000
+  text:
+    base_addr: 0x08000000
+    file: PLC.bin
+    permissions: r-x
+    size: 0x7000

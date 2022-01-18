@@ -1,0 +1,27 @@
+# Build Files
+build
+dist
+
+# IDEs
+.idea
+.vscode
+
+# Binary files
+*.pyc
+*.egg-info
+__pycache__
+
+*.so
+*.o
+
+# FS relics
+core*
+.fuse_hidden*
+
+# ida stuff
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+*.idb

@@ -1,0 +1,5 @@
+memory_map:
+  ram:  {base_addr:  0x20000000, size: 0x00100000, permissions: rw-}
+  mmio: {base_addr:  0x40000000, size: 0x20000000, permissions: rw-}
+  nvic: {base_addr:  0xe0000000, size: 0x10000000, permissions: rw-}
+  irq_ret: {base_addr: 0xfffff000, size: 0x1000, permissions: --x}

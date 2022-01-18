@@ -1,0 +1,64 @@
+[DEFAULT] # fuzzing only config
+base        = /home/bo/iot/iot-os-fuzzer
+run         = 1.0
+#program     = modbus
+#program     = firmata
+#program     = quad_copter
+program     = soldering_iron
+working_dir = %(base)s/run/%(program)s/%(run)s
+
+[afl] # fuzzing only config
+bin         = %(base)s/afl/afl-fuzz
+timeout     = 150+
+input       = %(working_dir)s/inputs
+output      = %(working_dir)s/outputs
+
+[cov] # fuzzing coverage counting config
+#count_hang  = False
+count_hang  = True
+bbl_cov_read_sz = 20000000 ; 20MB w/o hang
+#bbl_cov_read_sz = 20000000 ; 20MB w/ hang
+timeout     = 1 ; 1s
+
+[qemu]
+bin         = %(base)s/afl/qemu_mode/bin_pm9.5.5/qemu-system-gnuarmeclipse
+#bin         = /home/bo/Work/qemu/install/debian64/qemu/bin/qemu-system-gnuarmeclipse
+log         = unimp,guest_errors,int
+#log         = unimp,guest_errors,exec,int -D qemu.log
+
+[program]
+#board       = STM32F429I-Discovery
+#mcu         = STM32F429ZI
+board       = NUCLEO-F103RB
+mcu         = STM32F103RB
+#board       = Arduino-Due
+#mcu         = SAM3X8E
+#board       = FRDM-K64F
+#mcu         = MK64FN1M0VLL12
+
+#img         = %(working_dir)s/modbus.ino.elf
+#img         = %(working_dir)s/StandardFirmata.ino.elf
+img         = %(working_dir)s/TS100_EN.elf
+#img         = /home/bo/nfs/iot/os/arduino/modbus/build/modbus.ino.elf
+
+#img         = /home/bo/iot/os/iot-fuzzer-RIOT-new/examples/f103/usart/bin/nucleo-f103/hello-world.elf
+#img         = /home/bo/iot/os/iot-fuzzer-RIOT-new/examples/usart_frdm/bin/frdm-k64f/hello-world.elf
+
+#img         = /home/bo/iot/os/arduino/f103/ADC/build/ADC.ino.elf
+#img         = /home/bo/iot/os/arduino/ad/Serial/build/Serial.ino.elf
+
+#img         = /home/bo/iot/os/nuttxenv_f103/nuttx/nuttx
+#img         = /home/bo/iot/os/nuttxenv_ad/nuttx/nuttx
+#img         = /home/bo/iot/os/nuttxenv_frdm/nuttx/nuttx
+
+#img         = /home/bo/iot/os/grbl_stm32f4/grbl_stm32f4
+#img         = /home/bo/iot/os/ts100/workspace/TS100/Hexfile/TS100_EN.elf
+#img         = /home/bo/Firmware_V101-103C8.elf
+
+[model]
+retry_num   = 3
+peri_addr_range = 512
+objdump     = /home/bo/iot/toolchains/gcc-arm-none-eabi-6-2017-q2-update/bin/arm-none-eabi-objdump
+# config below are fuzzing only
+bin         = %(base)s/model_extraction/me.py
+log_file    = %(working_dir)s/me.log

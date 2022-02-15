@@ -180,6 +180,7 @@ year = {2022},
 address = {Boston, MA},
 url = {https://www.usenix.org/conference/usenixsecurity22/presentation/scharnowski},
 publisher = {USENIX Association},
+author={Scharnowski, Tobias and Bars, Nils and Schloegel, Moritz and Gustafson, Eric and Muench, Marius and Vigna, Giovanni and Kruegel, Christopher and Holz, Thorsten and Abbasi, Ali},
 month = aug,
 }
 ```

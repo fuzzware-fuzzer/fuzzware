@@ -7,6 +7,8 @@ The idea of this project is to configure the memory ranges of an ARM Cortex-M3 /
 
 Our [paper](https://www.usenix.org/system/files/sec22summer_scharnowski.pdf) from USENIX Security '22 explains the system in more detail.
 
+The [fuzzware-experiments repository](fuzzware-experiments) contains the data sets, scripts, and documentation required to replicate our experiments.
+
 ## Quick Start
 First install:
 ```

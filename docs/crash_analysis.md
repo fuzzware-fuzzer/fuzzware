@@ -116,9 +116,9 @@ handlers:
 
 **NOTE: Make sure to copy and modify the config.yml from the mainXXX directory that the given inputs belongs to. Otherwise, MMIO models will be missing/mismatching and the run will not replay as expected. For example, for the third main directory, create a backup and modify fuzzware-project/main003/config.yml. Once outside the fuzzware-project directory, you will also need to use the plain "fuzzware emu" utility instead of the "fuzzware replay" utility to run inputs for the given configuration.**
 
-As an example, please refer to the [crashing POC of CVE-2021-3329](https://github.com/fuzzware-fuzzer/fuzzware-experiments/03-fuzzing-new-targets/zephyr-os/prebuilt_samples/CVE-2021-3329/POC/config.yml) to see how these hooks can make understanding a given crash significantly simpler.
+As an example, please refer to the [crashing POC of CVE-2021-3329](https://github.com/fuzzware-fuzzer/fuzzware-experiments/blob/main/03-fuzzing-new-targets/zephyr-os/prebuilt_samples/CVE-2021-3329/POC/config.yml) to see how these hooks can make understanding a given crash significantly simpler.
 
-Also, for an example of a set of generic debug print hooks (do not use in the fuzzing configuration itself!), refer to [zephyr_debug_snippets.yml](https://github.com/fuzzware-fuzzer/fuzzware-experiments/03-fuzzing-new-targets/zephyr-os/building/base_configs/zephyr_debug_snippets.yml) within the fuzzware-experiments repo.
+Also, for an example of a set of generic debug print hooks (do not use in the fuzzing configuration itself!), refer to [zephyr_debug_snippets.yml](https://github.com/fuzzware-fuzzer/fuzzware-experiments/blob/main/03-fuzzing-new-targets/zephyr-os/building/base_configs/zephyr_debug_snippets.yml) within the fuzzware-experiments repo.
 
 ## Scripting A Trace Analysis
 

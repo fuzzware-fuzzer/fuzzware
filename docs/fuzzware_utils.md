@@ -21,7 +21,7 @@ workon fuzzware
 ## Starting the Pipeline
 The pipeline is what you want to be using whenever you start fuzzing a firmware image as it automatically manages fuzzing and model generation for you. It will generate the configurations and inputs that you can use to perform manual triaging and troubleshooting.
 
-For a properly configured firmware image and when within the installed `fuzzware` docker container or the `fuzzware` virtualenv on your locally installed system, you can get started by simply navigating to a correctly configured target directory in [the examples subdirectory](examples) and starting the pipeline with default arguments:
+For a properly configured firmware image and when within the installed `fuzzware` docker container or the `fuzzware` virtualenv on your locally installed system, you can get started by simply navigating to a correctly configured target directory in [the examples subdirectory](../examples) and starting the pipeline with default arguments:
 
 Using Docker:
 ```
@@ -39,7 +39,7 @@ This will create a `fuzzware-project` subdirectory and start the full pipeline w
 - `fuzzware-project/mainXXX/fuzzers/fuzzerY/queue`: Fuzzer inputs
 - `fuzzware-project/mainXXX/fuzzers/fuzzerY/traces`: Pipeline-generated compact traces (detailed traces can be generated manually using `fuzzware replay` or `fuzzware emu`)
 
-For more information on the results stored in the `fuzzware-project` directory, refer to the pipeline's README [pipeline/README.md](pipeline/README.md).
+For more information on the results stored in the `fuzzware-project` directory, refer to the pipeline's README [pipeline/README.md](https://github.com/fuzzware-fuzzer/fuzzware-pipeline/blob/main/README.md).
 
 There are situations where you might want to use a sub-component in isolation. This may be the case for troubleshooting, debugging, crash triaging and during fuzzware development. For a full list of supported commands, use:
 ```

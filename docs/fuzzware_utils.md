@@ -39,7 +39,7 @@ This will create a `fuzzware-project` subdirectory and start the full pipeline w
 - `fuzzware-project/mainXXX/fuzzers/fuzzerY/queue`: Fuzzer inputs
 - `fuzzware-project/mainXXX/fuzzers/fuzzerY/traces`: Pipeline-generated compact traces (detailed traces can be generated manually using `fuzzware replay` or `fuzzware emu`)
 
-For more information on the results stored in the `fuzzware-project` directory, refer to the pipeline's README [pipeline/README.md](https://github.com/fuzzware-fuzzer/fuzzware-pipeline/blob/main/README.md).
+For more information on the results stored in the `fuzzware-project` directory, refer to the pipeline's README [fuzzware-pipeline/README.md](https://github.com/fuzzware-fuzzer/fuzzware-pipeline/blob/main/README.md).
 
 There are situations where you might want to use a sub-component in isolation. This may be the case for troubleshooting, debugging, crash triaging and during fuzzware development. For a full list of supported commands, use:
 ```

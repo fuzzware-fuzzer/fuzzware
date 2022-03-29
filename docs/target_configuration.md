@@ -4,7 +4,7 @@ After building a firmware sample, we need to set it up for fuzzing initially. Af
 
 In general, while many of the following configuration options are not strictly required to fuzz test a sample, stacking as many configurations as possible for a given target will improve fuzzing performance significantly. In the end, the more firmware-specific quirks and overhead we can get rid of, the more we can focus the fuzzer on the functionality we are interested in. This will translate into the firmware behaving more and more like an ordinary command-line tool under test, making the fuzzer all the more effective in a practical setting.
 
-There are some configuration options which are not discussed here. Also refer to [/emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) for additional options (and if you are really interested, the [code implementing the configuration parsing](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/harness/fuzzware_harness/harness.py) in the emulator to make sure we did not miss anything important).
+There are some configuration options which are not discussed here. Also refer to [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) for additional options (and if you are really interested, the [code implementing the configuration parsing](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/harness/fuzzware_harness/harness.py) in the emulator to make sure we did not miss anything important).
 
 # Automated Configuration: fuzzware genconfig
 To configure a firmware image, the `fuzzware genconfig` utility might be a good starting point. This will generate a configuration file with a best-effort memory map (for ELF files this will be derived from ELF sections and Cortex-M standard memory ranges) and run sample inputs to detect very early crashes in an effort to identify and configure custom MMIO ranges. **CAUTION: Do NOT use this generated configuration without manually verifying it. While the utility may work well for some cases, it will fail in others.**
@@ -14,7 +14,7 @@ One specific thing to watch out for here is memory ranges named in the following
 # Manual Base Config
 As also indicated in the [top-level README](../README.md), we can also create a configuration manually:
 
-Find a detailed overview of configuration options in [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
+Find a detailed overview of configuration options in [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
 
 At minimum, you will need a bare-metal firmware blob and know where it is located in memory. With this, you can setup a memory map. For a firmware blob `fw.bin` located at address `0x08000000` in ROM, a config located in a newly created `examples/my-fw` directory would look like this:
 ```
@@ -33,11 +33,11 @@ memory_map:
 
 # Optimizing Interrupt Behavior
 
-A default, catch-all interrupt behavior is just raising one interrupt every 1000 basic blocks in a round-robin fashion. Refer to [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) on the exact ways of how interrupts can be configured.
+A default, catch-all interrupt behavior is just raising one interrupt every 1000 basic blocks in a round-robin fashion. Refer to [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) on the exact ways of how interrupts can be configured.
 
 Depending on the architecture of your target code and the amount of knowledge you possess on it, you may apply more specific interrupt configurations, such as raising a specific interrupt when visiting a specific basic block, or letting the fuzzer decide based on fuzzing input which interrupt to trigger, instead of triggering all interrupt in a round-robin manner. Using fuzzing input to let the fuzzer decide about which interrupt to trigger leads to a tradeoff: On the one hand, it provides the fuzzer with more flexibility, but on the other hand it also forces more fuzzing input to be consumed.
 
-You can also disable a given interrupt in case you know it is either irrelevant to what you want to fuzz, or it is actively harming firmware execution (such as a triggering watchdog timer). You can do this via the `disabled_irqs` configuration (again, refer to [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) for details).
+You can also disable a given interrupt in case you know it is either irrelevant to what you want to fuzz, or it is actively harming firmware execution (such as a triggering watchdog timer). You can do this via the `disabled_irqs` configuration (again, refer to [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) for details).
 
 For an example of how we used triggering interrupts at the target OS'es idle loop, refer to the [fuzzware-experiment repo's CVE firmware setup](https://github.com/fuzzware-fuzzer/fuzzware-experiments/blob/main/03-fuzzing-new-targets/zephyr-os/building/base_configs/zephyr_default.yml).
 
@@ -128,7 +128,7 @@ boot:
   target: idle
 ```
 
-The above is an extract from the configuration README in [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
+The above is an extract from the configuration README in [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
 
 This configuration is picked up by `fuzzware pipeline` which checks each new basic block coverage trace to identify a successfully booting input. After identifying such an input, it will then configure it as a prefix input with the emulator for all coming configuration iterations. This essentially sets a snapshot to start at with the emulator, such that emulation in the fuzzer will always start at the configured `target` location automatically.
 
@@ -146,4 +146,4 @@ fuzzware genstats mmio-overhead-elim
 
 This produces a yaml file `fuzzware-project/stats/mmio_overhead_elimination.yml` which contains data about fuzzing input consumption per MMIO model. Most importantly (in this use case), it also shows which models consume the largest amounts of data. These models may be worth checking out manually to make sure that they are actually meaningful to fuzzing progress. Having the fuzzer mutate meaningless inputs most of the time will not help it discover meaningful firmware behavior. In case a highly-used MMIO model is not actually contributing to code coverage, we may want to manually configure this MMIO access to be modeled in a restrictive way (for example, by assigning a `constant` model to the respective pc/mmio_addr access context).
 
-The entry to search for within `fuzzware-project/stats/mmio_overhead_elimination.yml` is the `per_access_context` member with context entries that have a large `bytes_fuzzing_input` value assigned. After figuring out a fitting model type, you may manually assign an MMIO model according to [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml). Upon start, the pipeline will take these custom MMIO model configs into account and regard them as definitive, meaning that it will not compute its own model for it.
+The entry to search for within `fuzzware-project/stats/mmio_overhead_elimination.yml` is the `per_access_context` member with context entries that have a large `bytes_fuzzing_input` value assigned. After figuring out a fitting model type, you may manually assign an MMIO model according to [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml). Upon start, the pipeline will take these custom MMIO model configs into account and regard them as definitive, meaning that it will not compute its own model for it.

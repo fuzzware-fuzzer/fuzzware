@@ -26,9 +26,9 @@ Directories within this repository. For the experiments in our paper, as well as
 | --------- | ----------- |
 | [docs](docs) | Documentation files (config optimizations, cov analysis, crash analysis). |
 | [examples](examples) | Target firmware samples to test Fuzzware on. |
-| [emulator](https://github.com/fuzzware-fuzzer/fuzzware-emulator) | The emulator which performs runs of a firmware for a given input file. |
+| [fuzzware-emulator](https://github.com/fuzzware-fuzzer/fuzzware-emulator) | The emulator which performs runs of a firmware for a given input file. |
 | [modeling](modeling) | MMIO modeling (based on angr). |
-| [pipeline](https://github.com/fuzzware-fuzzer/fuzzware-pipeline) | Orchestration between MMIO modeling and emulator. |
+| [fuzzware-pipeline](https://github.com/fuzzware-fuzzer/fuzzware-pipeline) | Orchestration between MMIO modeling and emulator. |
 | [scripts](scripts) | Some helper scripts (e.g., gather basic blocks in IDB). |
 | [fuzzware-experiments](https://github.com/fuzzware-fuzzer/fuzzware-experiments) | Pre-built images/config, crashing POCs/analyses, build scripts to re-run our experiments. |
 
@@ -36,8 +36,8 @@ To not let this document explode, we provide specific documentation in different
 
 1. Firmware targets, build scripts, example crash analyses: [the fuzzware-experiments repo](https://github.com/fuzzware-fuzzer/fuzzware-experiments)
 2. Fuzzware utilities documentation: `$ fuzzware -h`, and `$ fuzzware <util_name> -h`
-3. Firmware configuration file format details: [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml)
-4. Fuzzware project result directory structure: [pipeline/README.md](https://github.com/fuzzware-fuzzer/fuzzware-pipeline/blob/main/README.md)
+3. Firmware configuration file format details: [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml)
+4. Fuzzware project result directory structure: [fuzzware-pipeline/README.md](https://github.com/fuzzware-fuzzer/fuzzware-pipeline/blob/main/README.md)
 
 ## The Idea
 At its core, Fuzzware works by plugging an instruction emulator (currently: Unicorn Engine) to
@@ -51,8 +51,8 @@ a fuzzer (currently: afl) and having the fuzzer supply inputs for all hardware a
 ## Fuzzware Components
 Fuzzware is comprised of different components:
 
-1. [Pipeline Component (/pipeline)](https://github.com/fuzzware-fuzzer/fuzzware-pipeline): Integrated fuzzing and modeling. The pipeline component represents the glue between emulation and modeling. As the fuzzer/emulator finds new MMIO accesses during runs, the corresponding firmware states need to be forwarded to modeling. Similarly, the updated MMIO configurations produced during modeling need to be made available to the emulator. The Pipeline automates this cycle: It lets the emulator run, and pushes jobs for modeling newly observed MMIO accesses. It subsequently updates emulation with new models. The pipeline also implements additional features such as identifying successfully booted firmware states which are then automatically used for further fuzzing.
-2. [Emulation Component (/emulator)](https://github.com/fuzzware-fuzzer/fuzzware-emulator): Standalone single-input emulation runs. This component allows emulating a firmware image with a provided configuration for a particular input file. It handles the re-routing of fuzzing inputs to answer MMIO accesses as well as triggering interrupts and creating traces as well as state files for further processing. It also provides integration with a fuzzer (an AFL forkserver) for repeated emulation runs with different inputs.
+1. [Pipeline Component (fuzzware-pipeline)](https://github.com/fuzzware-fuzzer/fuzzware-pipeline): Integrated fuzzing and modeling. The pipeline component represents the glue between emulation and modeling. As the fuzzer/emulator finds new MMIO accesses during runs, the corresponding firmware states need to be forwarded to modeling. Similarly, the updated MMIO configurations produced during modeling need to be made available to the emulator. The Pipeline automates this cycle: It lets the emulator run, and pushes jobs for modeling newly observed MMIO accesses. It subsequently updates emulation with new models. The pipeline also implements additional features such as identifying successfully booted firmware states which are then automatically used for further fuzzing.
+2. [Emulation Component (fuzzware-emulator)](https://github.com/fuzzware-fuzzer/fuzzware-emulator): Standalone single-input emulation runs. This component allows emulating a firmware image with a provided configuration for a particular input file. It handles the re-routing of fuzzing inputs to answer MMIO accesses as well as triggering interrupts and creating traces as well as state files for further processing. It also provides integration with a fuzzer (an AFL forkserver) for repeated emulation runs with different inputs.
 3. [Modeling Component (/modeling)](modeling): Standalone modeling. This component generates MMIO access models for states exported by the emulation component. It does so by performing symbolic execution and analyzing what is happening to the accessed MMIO values. It outputs configuration snippets which can be fed back to the emulation component for improved emulation.
 
 For more information on the different components, please refer to the corresponding component subdirectories and READMEs.
@@ -96,7 +96,7 @@ workon fuzzware
 ```
 
 # Configuring Firmware Images For Fuzzing
-Find a detailed overview of configuration options in [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
+Find a detailed overview of configuration options in [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
 
 At minimum, you will need a bare-metal firmware blob and know where it is located in memory. With this, you can setup a memory map. For a firmware blob `fw.bin` located at address `0x08000000` in ROM, a config located in a newly created `examples/my-fw` directory would look like this:
 ```
@@ -138,7 +138,7 @@ If you want to get the best out of Fuzzware (as a human in the loop), you should
 2. Configure basic memory ranges: Create config manually or use `fuzzware genconfig` (works best with elf files, still take the output with a grain of salt and verify manually!)
 3. Fuzz the target: `fuzzware pipeline`
 4. Check coverage: `fuzzware cov`, `fuzzware cov -o cov.txt` and `fuzzware cov <target_function>`, `fuzzware replay --covering <target_function>`
-5. Adapt the configuration: [emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) and fuzz again. If the image requires a rebuild, go to step 1. If the config needs adaption, goto step 3.
+5. Adapt the configuration: [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) and fuzz again. If the image requires a rebuild, go to step 1. If the config needs adaption, goto step 3.
 6. Once you are reasonably sure that meaningful functionality is reached in the current setup, it might make sense to scale up cores: `fuzzware pipeline -n 16`.
 7. Check for crashes: `fuzzware genstats crashcontexts`
 8. Replay and analyze crashes: `fuzzware replay -M -t mainXXX/fuzzers/fuzzerY/crashes/idZZZ`

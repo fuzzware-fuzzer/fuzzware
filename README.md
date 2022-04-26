@@ -3,7 +3,7 @@
 
 Fuzzware is a project for automated, self-configuring fuzzing of firmware images.
 
-The idea of this project is to configure the memory ranges of an ARM Cortex-M3 / M4 firmware image, and start emulating / fuzzing the target. Fuzzware will figure out how MMIO values are used, configure models, and involve the fuzzer to provide hardware behavior which is not fully covered by MMIO models.
+The idea of this project is to configure the memory ranges of an ARM Cortex-M3 / M4 firmware image, and start emulating / fuzzing the target without full device emulation. Fuzzware will figure out how MMIO values are used, configure models, and involve the fuzzer to provide hardware behavior which is not fully covered by MMIO models.
 
 Our [paper](https://www.usenix.org/system/files/sec22summer_scharnowski.pdf) from USENIX Security '22 explains the system in more detail.
 
@@ -21,7 +21,7 @@ Then run:
 ```
 
 ## Repo Organization and Documents
-Directories within this repository. For the experiments in our paper, as well as 
+Directories within this repository. For the experiments in our paper, as well as submodules.
 | Directory | Description |
 | --------- | ----------- |
 | [docs](docs) | Documentation files (config optimizations, cov analysis, crash analysis). |
@@ -40,12 +40,12 @@ To not let this document explode, we provide specific documentation in different
 4. Fuzzware project result directory structure: [fuzzware-pipeline/README.md](https://github.com/fuzzware-fuzzer/fuzzware-pipeline/blob/main/README.md)
 
 ## The Idea
-At its core, Fuzzware works by plugging an instruction emulator (currently: Unicorn Engine) to
-a fuzzer (currently: afl) and having the fuzzer supply inputs for all hardware accesses. Whenever hardware in Memory-Mapped (MMIO) registers is accessed, the value is served from fuzzing input.
+At its core, Fuzzware works by plugging an instruction set emulator (currently: Unicorn Engine) to
+a fuzzer (currently: afl / AFL++) and having the fuzzer supply inputs for all hardware accesses. Whenever hardware in Memory-Mapped (MMIO) registers is accessed, the value is served from fuzzing input.
 
 "The fuzzer has no idea about how the hardware it is emulating is supposed to behave, so how can anything useful come out of this?" You might ask. There are different components to this:
-1. Coverage feedback: While the fuzzer does not know anything about the hardware, it can try different inputs and see how the firmware code reacts to it - whatever inputs make the firmware tick are likely to represent expected hardware behavior. The fuzzer can learn this by trial-and-error.
-2. MMIO Access Modeling: Firmware typically performs a variety of hardware (MMIO) accesses, a lot of those accesses are for status checking and housekeeping purposes. It turns out that a lot of those accesses are not meaningful to the overall firmware logic. This means a majority of **MMIO accesses can either be eliminated or condensed automatically**. Any MMIO access modeled this way takes away the need for the fuzzer to guess about hardware behavior.
+1. Coverage feedback: While the fuzzer does not know anything about the hardware, it can try different inputs and see how the firmware code reacts to it - whatever inputs trigger meaningful firmware code coverage are likely to represent expected hardware behavior. The fuzzer can chase this code coverage by trial-and-error.
+2. MMIO Access Modeling: Firmware typically performs a variety of hardware (MMIO) accesses. Many of those accesses are for status checking and housekeeping purposes. It turns out that a lot of those accesses are not meaningful to the overall firmware logic. This means a majority of **MMIO accesses can either be eliminated or condensed automatically**. Any MMIO access modeled this way takes away the need for the fuzzer to guess about hardware behavior.
 3. Custom Configurations: The user can supply different pieces of optional configuration to modify firmware behavior (skip or replace logic with custom handlers, define when and which interrupts to trigger) and to guide the emulation to sane firmware states (by describing mandatory checkpoints and error functions to avoid during the boot process). This can focus fuzzing on interesting functionality in case we have a human in the loop.
 
 ## Fuzzware Components
@@ -79,7 +79,7 @@ A docker image `"fuzzware"` is built which contains all the necessary binaries a
 ```
 
 ## Fuzzware on Host
-For a local setup, your system will have to have a list of local tooling installed to handle building unicorn, setting up virtual environments and finally run different pipeline components. You can see how to set those dependencies up in the [Docker file](dockerfile). Without installing all the dependencies first, different steps of the installation process will complain and you will be able to install them one by one.
+For a local setup, your system will have to have a list of local tooling installed to handle building unicorn, setting up virtual environments and finally running different pipeline components. You can see how to set those dependencies up in the [Docker file](dockerfile). Without installing all the dependencies first, different steps of the installation process will complain and you will be able to install them one by one.
 
 To install locally:
 ```
@@ -96,7 +96,8 @@ workon fuzzware
 ```
 
 # Configuring Firmware Images For Fuzzing
-Find a detailed overview of configuration options in [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml).
+Find a detailed overview of configuration options in [fuzzware-emulator/README_config.yml](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml) and more in-depth documentation in [docs/
+target_configuration.md](docs/target_configuration.md).
 
 At minimum, you will need a bare-metal firmware blob and know where it is located in memory. With this, you can setup a memory map. For a firmware blob `fw.bin` located at address `0x08000000` in ROM, a config located in a newly created `examples/my-fw` directory would look like this:
 ```
@@ -114,7 +115,7 @@ memory_map:
 ```
 Alternatively, you may also try out the experimental `fuzzware genconfig` utility which creates a basic configuration based on an elf file (extracts the binary from the ELF file, parses sections, and creates an initial memory config).
 
-This will get your firmware image up and running initially. There are different additional configuration options to set which are specific to a firmware image and can support hardware features such as DMA, increase performance / decrease MMIO overhead, guide the firmware boot process, focus the fuzzer on specific interrupts, add introspection and debug symbols.
+This will get your firmware image up and running initially. There are additional configuration options to set which are specific to a firmware image and can support hardware features such as DMA, increase performance / decrease MMIO overhead, guide the firmware boot process, focus the fuzzer on specific interrupts, add introspection and debug symbols.
 
 An inline-documentation of firmware image configuration features can be found in [the config README of the emulator](https://github.com/fuzzware-fuzzer/fuzzware-emulator/blob/main/README_config.yml). These configuration options allow you to configure different aspects concerning:
 - Interrupt raising (When? Which? How often?)

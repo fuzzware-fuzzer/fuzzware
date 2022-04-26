@@ -5,7 +5,7 @@ Fuzzware is a project for automated, self-configuring fuzzing of firmware images
 
 The idea of this project is to configure the memory ranges of an ARM Cortex-M3 / M4 firmware image, and start emulating / fuzzing the target without full device emulation. Fuzzware will figure out how MMIO values are used, configure models, and involve the fuzzer to provide hardware behavior which is not fully covered by MMIO models.
 
-Our [paper](https://www.usenix.org/system/files/sec22summer_scharnowski.pdf) from USENIX Security '22 explains the system in more detail.
+Our [paper](https://www.usenix.org/system/files/sec22summer_scharnowski.pdf) from USENIX Security '22 explains the system in more detail. For a demo, check out our [screen cast](https://asciinema.org/a/490160). 
 
 The [fuzzware-experiments repository](https://github.com/fuzzware-fuzzer/fuzzware-experiments) contains the data sets, scripts, and documentation required to replicate our experiments.
 

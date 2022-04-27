@@ -1,6 +1,6 @@
 from ubuntu:18.04
 env LANG=C.UTF-8 LC_ALL=C.UTF-8
-run apt-get update && apt-get upgrade -y && apt-get install -y python python3 python3-pip automake tmux redis wget autoconf sudo htop cmake clang vim unzip git binutils-arm-none-eabi
+run apt-get update && apt-get upgrade -y && apt-get install -y python python3 python3-pip automake tmux redis wget autoconf sudo htop cmake clang vim unzip git binutils-arm-none-eabi gnuplot
 run pip3 install virtualenv virtualenvwrapper cython setuptools
 
 arg USER_ID

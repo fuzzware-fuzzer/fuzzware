@@ -2,7 +2,7 @@ import copy
 import logging
 import os
 import yaml
-from os.path import isfile
+from os.path import isfile, split, join
 
 """ Utils to deal with fuzzware config parsing and updating
 
@@ -14,16 +14,24 @@ from .trace_serialization import parse_bbl_trace, parse_mem_trace, parse_mmio_tr
 
 l = logging.getLogger("UTIL")
 
+STATE_NAME_TOKEN = "state"
 TRACE_NAME_TOKENS = [
-    "mmio_access_bbtrace_pc_",
-    "mmio_access_ramtrace_pc_",
-    "mmio_access_mmiotrace_pc_"
+    "bbtrace",
+    "ramtrace",
+    "mmiotrace"
 ]
 def load_traces_for_state(statefile_path):
     # mmio_access_bbtrace_pc_ mmio_access_mmiotrace_pc_ mmio_access_ramtrace_pc_ mmio_access_state_pc_
-    bb_trace_path = statefile_path.replace("mmio_access_state_pc_", TRACE_NAME_TOKENS[0])
-    ram_trace_path = statefile_path.replace("mmio_access_state_pc_", TRACE_NAME_TOKENS[1])
-    mmio_trace_path = statefile_path.replace("mmio_access_state_pc_", TRACE_NAME_TOKENS[2])
+    statefile_dir, statefile_name = split(statefile_path)
+
+    # Check whether we have names which
+    if STATE_NAME_TOKEN not in statefile_name:
+        l.warning(f"Non-standard naming convention for state file '{statefile_name}'. Not looking for traces.")
+        return None, None, None
+
+    bb_trace_path = join(statefile_dir, statefile_name.replace(STATE_NAME_TOKEN, TRACE_NAME_TOKENS[0]))
+    ram_trace_path = join(statefile_dir, statefile_name.replace(STATE_NAME_TOKEN, TRACE_NAME_TOKENS[1]))
+    mmio_trace_path = join(statefile_dir, statefile_name.replace(STATE_NAME_TOKEN, TRACE_NAME_TOKENS[2]))
 
     bb_trace = None if not os.path.exists(bb_trace_path) else parse_bbl_trace(bb_trace_path)
     ram_trace = None if not os.path.exists(ram_trace_path) else parse_mem_trace(ram_trace_path)

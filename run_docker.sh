@@ -59,8 +59,7 @@ fi
 echo "[+] Mapping local dir '$targets_dir' into container"
 echo "[+] Executing command: '$cmd'"
 # Map targets directory into container
-current_user=$(whoami)
-if [ "$current_user" == "gitlab-runner" ]; then
+if [ ! -t 0 ]; then
     docker_options="-i"
     echo "[+] Running with -i"
 else

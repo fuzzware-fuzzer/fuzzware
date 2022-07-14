@@ -16,6 +16,7 @@ from .exploration_techniques import MMIOVarScoper, FunctionReturner, FirstStateS
 from .inspect_breakpoints import inspect_bp_track_newly_added_constraints, inspect_bp_trace_call, inspect_bp_trace_ret, inspect_bp_trace_liveness_reg, inspect_bp_trace_liveness_mem, inspect_cond_is_mmio_read, inspect_bp_mmio_intercept_read_after, inspect_bp_trace_reads, inspect_bp_trace_writes, inspect_bp_singleton_ensure_mmio, inspect_after_address_concretization
 from .arch_specific.arm_thumb_regs import regular_register_names
 from .arch_specific.arm_thumb_quirks import try_handling_decode_error
+from .logging_utils import set_log_levels
 
 l = logging.getLogger("ANA")
 
@@ -54,7 +55,7 @@ l = logging.getLogger("ANA")
 
 def perform_analyses(statefiles, cfg, is_debug=False, timeout=DEFAULT_TIMEOUT):
     if is_debug:
-        l.setLevel(logging.DEBUG)
+        set_log_levels(logging.DEBUG)
         l.debug("debug logging enabled")
 
     result_lines, config_entries = [], []

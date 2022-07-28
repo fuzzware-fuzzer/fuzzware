@@ -7,8 +7,6 @@ l = logging.getLogger("utils")
 
 from .arch_specific.arm_thumb_regs import scope_reg_names, return_reg
 
-DEFAULT_TIMEOUT = 600
-
 MAX_ACTIVE_STATES = 100
 
 MAX_DEAD_VARS = 3

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 import os
 import logging
+import signal
 import traceback
 
 import angr
 import claripy
 import archinfo
 
-from .angr_utils import CUSTOM_STASH_NAMES, DEFAULT_TIMEOUT, insn_addr_from_SimIRSBNoDecodeError
+from . import DEFAULT_TIMEOUT, EXPLORATION_TIMEOUT_FACTOR
+from .angr_utils import CUSTOM_STASH_NAMES, insn_addr_from_SimIRSBNoDecodeError
 from .base_state_snapshot import BaseStateSnapshot
 from .fuzzware_utils.config import update_config_file, TRACE_NAME_TOKENS
 from .model_detection import detect_model, create_model_config_map_errored
@@ -126,11 +128,17 @@ def wrapped_explore(simulation, **kwargs):
             # Try recovering from things like breakpoints
             if not try_handling_decode_error(simulation, stash_name, addr):
                 return False
-        except angr.errors.SimZeroDivisionException as e:
+        except (angr.errors.SimZeroDivisionException) as e:
             traceback.print_tb(e.__traceback__)
+            return False
+        except TimeoutError:
             return False
 
     return True
+
+def timeout_handler(signal_no, stack_frame):
+    l.warning("Hard timeout triggered. Raising exception...")
+    raise TimeoutError()
 
 def perform_analysis(statefile, cfg=None, is_debug=False, timeout=DEFAULT_TIMEOUT):
     project, initial_state, base_snapshot = setup_analysis(statefile, cfg)
@@ -145,13 +153,18 @@ def perform_analysis(statefile, cfg=None, is_debug=False, timeout=DEFAULT_TIMEOU
     for stash_name in CUSTOM_STASH_NAMES:
         simulation.populate(stash_name, [])
 
+    # Simulation techniques
     simulation.use_technique(angr.exploration_techniques.DFS())
-    timeout_detector_technique = simulation.use_technique(TimeoutDetector(timeout))
+    timeout_detector_technique = simulation.use_technique(TimeoutDetector(EXPLORATION_TIMEOUT_FACTOR * timeout))
     state_explosion_detector_technique = simulation.use_technique(StateExplosionDetector())
     first_state_split_detector_technique = simulation.use_technique(FirstStateSplitDetector())
     simulation.use_technique(FunctionReturner())
     simulation.use_technique(MMIOVarScoper())
     simulation.use_technique(LoopEscaper(debug=is_debug))
+
+    # Set Hard timeout
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(timeout)
 
     l.warning("Starting simulation now...")
 

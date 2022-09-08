@@ -19,27 +19,6 @@ class BaseStateSnapshot:
     Information about the concrete restored initial state from which we start
     symbolically executing.
     """
-    init_reg_constraints: list
-    init_reg_bitvecs: list
-    init_reg_bitvecvals: list
-    init_reg_bitvecs_unconstrained: list
-    init_mem_constraints: list
-    init_mem_bitvecs: list
-    init_mem_bitvecvals: list
-    init_mem_bitvecs_unconstrained: list
-
-    access_pc: int
-    mmio_addr: int
-    mmio_access_size: int
-
-    bb_trace: list
-    ram_trace: list
-    mmio_trace: list
-
-    mmio_ranges: list
-
-    initial_pc: int
-    regvars_by_name: dict
 
     def __init__(self, cfg):
         self.init_reg_constraints = []
@@ -61,6 +40,8 @@ class BaseStateSnapshot:
         self.mmio_access_size = None
 
         self.mmio_ranges = list(DEFAULT_MMIO_RANGES)
+
+        self.initial_pc = None
 
         configured_mmio_ranges = []
         if cfg:
@@ -125,8 +106,8 @@ class BaseStateSnapshot:
         self.mmio_ranges.append((start, end))
 
     @classmethod
-    def from_state_file(self, statefile, cfg):
-        base_snapshot = BaseStateSnapshot(cfg)
+    def from_state_file(cls, statefile, cfg):
+        base_snapshot = cls(cfg)
         base_snapshot.bb_trace, base_snapshot.ram_trace, base_snapshot.mmio_trace = load_traces_for_state(statefile)
 
         l.info("Loading state file: {}".format(statefile))
@@ -160,7 +141,7 @@ class BaseStateSnapshot:
         initial_sp = None
         for name, val in regs.items():
             if name == REG_NAME_PC:
-                self.initial_pc = val
+                base_snapshot.initial_pc = val
                 val |= 1
                 continue
 

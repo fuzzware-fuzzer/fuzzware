@@ -142,10 +142,10 @@ def check_and_gen_set_model(states):
             return None
 
     # Collect variables
-    variables = set()
+    variables = []
     for state in states:
         for var in state.liveness.tracked_vars:
-            variables.add(var)
+            variables.append(var)
 
     # For every variable, collect and process constraints per state
     vals = None

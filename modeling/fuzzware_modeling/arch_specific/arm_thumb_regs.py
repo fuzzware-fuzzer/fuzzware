@@ -29,4 +29,4 @@ def translate_reg_name_to_vex_internal_name(name):
     return name
 
 def leave_reg_untainted(name):
-    return name == 'itstate'
+    return name in ['itstate', 'cc_op']

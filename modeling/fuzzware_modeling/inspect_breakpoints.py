@@ -74,7 +74,9 @@ def inspect_bp_trace_call(state):
     state.liveness.enter_function(state)
 
 def inspect_bp_trace_liveness_reg(state):
-    if state.inspect.reg_write_offset not in state.globals['regular_reg_offsets']:
+    # Resolve reg_write_offset because it might be a BV32 value
+    reg_write_offset = state.solver.eval(state.inspect.reg_write_offset)
+    if reg_write_offset not in state.globals['regular_reg_offsets']:
         return
 
     state.liveness.on_before_reg_write(state.inspect.reg_write_expr, state.inspect.reg_write_offset, state.inspect.reg_write_length)

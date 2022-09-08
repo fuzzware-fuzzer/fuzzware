@@ -79,7 +79,12 @@ def inspect_bp_trace_liveness_reg(state):
     if reg_write_offset not in state.globals['regular_reg_offsets']:
         return
 
-    state.liveness.on_before_reg_write(state.inspect.reg_write_expr, state.inspect.reg_write_offset, state.inspect.reg_write_length)
+    # TODO: Discuss with Tobi again
+    # If reg_write_length is not set use the expr length instead.
+    # This has to be done because size MUST NOT be None if passed to load.
+    reg_write_length = state.inspect.reg_write_length if state.inspect.reg_write_length else state.inspect.reg_write_expr.length // state.arch.byte_width
+
+    state.liveness.on_before_reg_write(state.inspect.reg_write_expr, reg_write_offset, reg_write_length)
 
 def inspect_bp_trace_liveness_mem(state):
     addr = state.solver.eval(state.inspect.mem_write_address)
@@ -99,7 +104,12 @@ def inspect_bp_trace_liveness_mem(state):
         l.debug("[{:x}] Write to local variable!".format(state.addr))
         l.debug("Target: {}, val: {}".format(state.inspect.mem_write_address, state.inspect.mem_write_expr))
 
-        state.liveness.on_before_stack_mem_write(addr, state.inspect.mem_write_expr, state.inspect.mem_write_length)
+        # TODO: Discuss with Tobi again
+        # If mem_write_length is not set use the expr length instead.
+        # This has to be done because size MUST NOT be None if passed to load.
+        mem_write_length = state.inspect.mem_write_length if state.inspect.mem_write_length else state.inspect.mem_write_expr.length // state.arch.byte_width
+
+        state.liveness.on_before_stack_mem_write(addr, state.inspect.mem_write_expr, mem_write_length)
     else:
         value_variable_names = [e._encoded_name for e in state.inspect.mem_write_expr.leaf_asts() if e.symbolic]
         # We got a write to memory outside of stack/MMIO. Check whether we are writing something that depends on tracked MMIO inputs

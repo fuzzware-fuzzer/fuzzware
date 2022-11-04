@@ -1,5 +1,7 @@
 import logging
+import angr
 import archinfo
+from typing import Tuple
 
 l = logging.getLogger("QUIRKS")
 from fuzzware_modeling.angr_utils import all_states
@@ -114,3 +116,77 @@ def add_special_initstate_reg_vals(initial_state, regs):
 
     # Also try figuring out the current itstate value
     regs['itstate'] = find_itstate_value(initial_state, regs)
+
+def model_special_strex(initial_state, insn):
+    """
+    STREX Instructions
+    https://developer.arm.com/documentation/dht0008/a/ch01s02s01
+
+    Model accesses performed by strex specifically.
+
+    This is necessary as Unicorn performs an MMIO read access while angr just moves
+    the value 0 into the destination register
+
+    For example, the instruction STREX R2, R1, [R0] in
+    - angr: just stores the value 0 in R2
+    - unicorn/qemu: reads from address [R0] during the instruction
+
+    The way we handle this is by assigning a constant model returning the value 0 here
+    to indicate to firmware logic that the store operation (which we know is to an MMIO
+    address by being asked to model the access in the first place) has succeeded.
+
+    NOTE: This may be a failure case in nieche cases where the firmware requires the operation
+    to fail (in something like a low-level hardware funtionality debug case). However, this
+    should never really occur and can still be handled manually.
+
+    To perform the modeling, extract the memory location from the instruction, evaluate it,
+    and assign a model for the address.
+    """
+    addr_operand = insn.operands[-1].mem
+
+    reg_id = addr_operand.base
+    offset = addr_operand.disp
+    reg_name = insn.reg_name(reg_id)
+
+    mmio_addr = initial_state.solver.eval(getattr(initial_state.regs, reg_name.lower()) + offset)
+    access_pc = initial_state.liveness.base_snapshot.initial_pc
+
+    # Handle sizes of strexb/h/d
+    # TODO: how is strexd handled? it performs two MMIO accesses at the same time
+    mmio_access_size = {
+        'b': 1,
+        'h': 2
+    }.get(insn.mnemonic[-1:].lower(), 4)
+    access_val = 0
+
+    config_snippet = {
+        "constant": {
+            f"pc_{access_pc:08x}_mmio_{mmio_addr:08x}": {
+                'addr': mmio_addr,
+                'pc': access_pc,
+                'access_size': mmio_access_size,
+                'val': access_val
+            }
+        }
+    }
+    descr_string = f"pc: 0x{access_pc:08x}, mmio: 0x{mmio_addr:08x}, special handling: STREX, constant model value {access_val}"
+
+    return descr_string, config_snippet
+
+def model_arch_specific(project, initial_state, base_snapshot, simulation) -> Tuple[str, dict]:
+    try:
+        block = project.factory.block(initial_state.addr)
+        insn = block.capstone.insns[0].insn
+
+        if insn.mnemonic.lower().startswith("strex"):
+            l.info(f"Got arm/thumb-specific instruction {insn.mnemonic} {insn.op_str}")
+            insn = block.capstone.insns[0]
+            return model_special_strex(initial_state, insn.insn)
+
+    except Exception as e:
+        l.info(f"Got error: {e}")
+        return None, None
+
+    from IPython import embed; embed()
+
+    return None, None

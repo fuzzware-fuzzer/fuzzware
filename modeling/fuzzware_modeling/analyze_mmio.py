@@ -17,7 +17,7 @@ from .liveness_plugin import LivenessPlugin
 from .exploration_techniques import MMIOVarScoper, FunctionReturner, FirstStateSplitDetector, TimeoutDetector, LoopEscaper, StateExplosionDetector
 from .inspect_breakpoints import inspect_bp_track_newly_added_constraints, inspect_bp_trace_call, inspect_bp_trace_ret, inspect_bp_trace_liveness_reg, inspect_bp_trace_liveness_mem, inspect_cond_is_mmio_read, inspect_bp_mmio_intercept_read_after, inspect_bp_trace_reads, inspect_bp_trace_writes, inspect_bp_singleton_ensure_mmio, inspect_after_address_concretization
 from .arch_specific.arm_thumb_regs import regular_register_names
-from .arch_specific.arm_thumb_quirks import try_handling_decode_error
+from .arch_specific.arm_thumb_quirks import try_handling_decode_error, model_arch_specific
 from .logging_utils import set_log_levels
 
 l = logging.getLogger("ANA")
@@ -149,6 +149,11 @@ def perform_analysis(statefile, cfg=None, is_debug=False, timeout=DEFAULT_TIMEOU
         initial_state.inspect.b('mem_write', when=angr.BP_AFTER, action=inspect_bp_trace_writes)
 
     simulation = project.factory.simgr(initial_state, resilience=False)
+
+    # Handle quirky arch-specific instruction modeling
+    result_line, config_entry = model_arch_specific(project, initial_state, base_snapshot, simulation)
+    if result_line is not None and config_entry is not None:
+        return result_line, config_entry
 
     for stash_name in CUSTOM_STASH_NAMES:
         simulation.populate(stash_name, [])

@@ -122,6 +122,11 @@ def inspect_bp_mmio_intercept_read_after(state):
 
 def inspect_bp_singleton_ensure_mmio(state):
     read_addr = state.solver.eval(state.inspect.mem_read_address)
+    read_pc = state.addr
+
+    if read_pc | 1 != state.liveness.base_snapshot.initial_pc | 1:
+        raise Exception("First MMIO access not performed on first instruction. This is likely due to an unsupported instruction.")
+
     if not is_mmio_address(state, read_addr):
         start = read_addr & (~0xfff)
         l.warning("Adding non-configured MMIO page at: 0x{:08x}".format(start))

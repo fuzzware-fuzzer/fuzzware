@@ -131,9 +131,9 @@ def model_special_strex(initial_state, insn):
     - angr: just stores the value 0 in R2
     - unicorn/qemu: reads from address [R0] during the instruction
 
-    The way we handle this is by assigning a constant model returning the value 0 here
-    to indicate to firmware logic that the store operation (which we know is to an MMIO
-    address by being asked to model the access in the first place) has succeeded.
+    The way we handle this is by assigning a passthrough model returning the last written
+    value to let unicorn figure out whether the value has stayed the same and thus whether
+    the store operation has succeeded.
 
     NOTE: This may be a failure case in nieche cases where the firmware requires the operation
     to fail (in something like a low-level hardware funtionality debug case). However, this
@@ -157,19 +157,18 @@ def model_special_strex(initial_state, insn):
         'b': 1,
         'h': 2
     }.get(insn.mnemonic[-1:].lower(), 4)
-    access_val = 0
 
     config_snippet = {
-        "constant": {
+        "passthrough": {
             f"pc_{access_pc:08x}_mmio_{mmio_addr:08x}": {
                 'addr': mmio_addr,
                 'pc': access_pc,
                 'access_size': mmio_access_size,
-                'val': access_val
+                'init_val': 0
             }
         }
     }
-    descr_string = f"pc: 0x{access_pc:08x}, mmio: 0x{mmio_addr:08x}, special handling: STREX, constant model value {access_val}"
+    descr_string = f"pc: 0x{access_pc:08x}, mmio: 0x{mmio_addr:08x}, special handling: STREX, passthrough model"
 
     return descr_string, config_snippet
 
@@ -186,7 +185,5 @@ def model_arch_specific(project, initial_state, base_snapshot, simulation) -> Tu
     except Exception as e:
         l.info(f"Got error: {e}")
         return None, None
-
-    from IPython import embed; embed()
 
     return None, None

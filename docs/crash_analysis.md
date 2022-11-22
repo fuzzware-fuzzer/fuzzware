@@ -71,7 +71,7 @@ From here, we can analyze the crash location and memory writes, and hopefully tr
 We can also set breakpoints on a particular basic block (CAUTION: debugging currently works based on basic block hooks, so breakpoints at an instruction within a basic block will **not trigger**) function of interest and get dropped into a python shell with access to the unicorn object (the `uc` variable):
 
 ```
-fuzzware replay -b <path_to_crashing_input> <my_basic_block_addr_or_symbol> 
+fuzzware replay <path_to_crashing_input> -b <my_basic_block_addr_or_symbol> 
 ```
 
 When arriving at a breakpoint, we can look around by inspecting the register state as well as memory contents:
@@ -83,7 +83,7 @@ uc.mem.u32(<addr>, <number_of_dwords>)
 
 For example, to print the source buffer of a memcpy (assuming we configured `memcpy` as a symbol), we would do:
 ```
-fuzzware replay -b memcpy <path_to_crashing_input>
+fuzzware replay <path_to_crashing_input> -b memcpy
 
 uc.mem.u8(uc.mem.r1, uc.mem.r2)
 ```

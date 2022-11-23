@@ -1,7 +1,7 @@
 import angr, claripy
 
 from .angr_utils import contains_var, is_mmio_address, is_ast_mmio_address
-from .arch_specific.arm_thumb_regs import newly_added_constraints_reg_names, REG_NAME_SP
+from .arch_specific.arm_thumb_regs import NEWLY_ADDED_CONSTRAINTS_REG_NAMES, REG_NAME_SP
 
 import logging
 l = logging.getLogger("MMIO")
@@ -35,7 +35,7 @@ def inspect_bp_track_newly_added_constraints(state):
     If a variable now has a specific value, replace the register contents with the value.
     This allows killing references as early as possible.
     """
-    symbolic_regs = [reg_name for reg_name in newly_added_constraints_reg_names if getattr(state.regs, reg_name).symbolic]
+    symbolic_regs = [reg_name for reg_name in NEWLY_ADDED_CONSTRAINTS_REG_NAMES if getattr(state.regs, reg_name).symbolic]
     if not symbolic_regs:
         return
 
@@ -50,7 +50,7 @@ def inspect_bp_track_newly_added_constraints(state):
                             if state.solver.unique(simplified_reg_contents, extra_constraints=state.solver.constraints):
                                 concrete_val = state.solver.eval_one(simplified_reg_contents, extra_constraints=state.solver.constraints)
 
-                                print("Newly added constraint found in register {}: {}, constraint: {}. Only one value left: 0x{:x}. Overriding...".format(reg_name, reg_contents, constraint, concrete_val))
+                                l.info("Newly added constraint found in register {}: {}, constraint: {}. Only one value left: 0x{:x}. Overriding...".format(reg_name, reg_contents, constraint, concrete_val))
                                 # Override register value with concrete value. This will trigger liveness counter updates via inspect bps
                                 setattr(state.regs, reg_name, claripy.BVV(concrete_val, 32))
                         except angr.errors.SimUnsatError:
@@ -79,7 +79,6 @@ def inspect_bp_trace_liveness_reg(state):
     if reg_write_offset not in state.globals['regular_reg_offsets']:
         return
 
-    # TODO: Discuss with Tobi again
     # If reg_write_length is not set use the expr length instead.
     # This has to be done because size MUST NOT be None if passed to load.
     reg_write_length = state.inspect.reg_write_length if state.inspect.reg_write_length else state.inspect.reg_write_expr.length // state.arch.byte_width
@@ -104,7 +103,6 @@ def inspect_bp_trace_liveness_mem(state):
         l.debug("[{:x}] Write to local variable!".format(state.addr))
         l.debug("Target: {}, val: {}".format(state.inspect.mem_write_address, state.inspect.mem_write_expr))
 
-        # TODO: Discuss with Tobi again
         # If mem_write_length is not set use the expr length instead.
         # This has to be done because size MUST NOT be None if passed to load.
         mem_write_length = state.inspect.mem_write_length if state.inspect.mem_write_length else state.inspect.mem_write_expr.length // state.arch.byte_width
@@ -127,7 +125,7 @@ def inspect_bp_mmio_intercept_read_after(state):
     try:
         state.solver.eval_one(state.inspect.mem_read_address)
     except Exception as e:
-        print(f"inspect_bp_mmio_intercept_read_after error for addr {state.inspect.mem_read_address}: {e}")
+        l.info(f"inspect_bp_mmio_intercept_read_after error for addr {state.inspect.mem_read_address}: {e}")
         return
 
     state.liveness.on_after_mmio_mem_read(state.inspect.mem_read_address, state.inspect.mem_read_expr, state.inspect.mem_read_length)
@@ -153,8 +151,8 @@ def inspect_bp_singleton_ensure_mmio(state):
 
 def inspect_bp_trace_reads(state):
     is_mmio_access = is_ast_mmio_address(state, state.inspect.mem_read_address)
-    print('Read', state.inspect.mem_read_expr, 'at', state.inspect.mem_read_address, "from ", hex(state.addr),  "is mmio read? ->", is_mmio_access, state.inspect.mem_read_expr)
+    l.info(f'Read {state.inspect.mem_read_expr} at {state.inspect.mem_read_address} from  {hex(state.addr)} is mmio read? -> {is_mmio_access} {state.inspect.mem_read_expr}')
 
 def inspect_bp_trace_writes(state):
     is_mmio_access = is_ast_mmio_address(state, state.inspect.mem_write_address)
-    print('Write', state.inspect.mem_write_expr, 'to', state.inspect.mem_write_address, "from ", hex(state.addr),  "is mmio write? ->", is_mmio_access, state.inspect.mem_write_expr)
+    l.info(f'Write {state.inspect.mem_write_expr} to {state.inspect.mem_write_address} from  {hex(state.addr)} is mmio write? -> {is_mmio_access} {state.inspect.mem_write_expr}')

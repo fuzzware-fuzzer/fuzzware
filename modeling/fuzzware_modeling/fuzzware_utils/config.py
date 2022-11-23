@@ -49,7 +49,7 @@ def get_mmio_ranges(cfg):
                     end = start + cfg['memory_map'][key]['size']
                     res.append((start, end))
                 except Exception as e:
-                    print(f"[-] Failed to parse {cfg['memory_map'][key]} as memory region")
+                    l.error(f"[-] Failed to parse {cfg['memory_map'][key]} as memory region")
                     raise e
     else:
         raise Exception('[!] Memory map not found in fuzzware config')
@@ -62,7 +62,7 @@ def merge_model_conflict(model_type, existing_entry, new_entry):
     if model_type == "set":
         for val in new_entry['vals']:
             if val not in existing_entry['vals']:
-                print("[Set Model Merging] Adding value {:x} to entry".format(val))
+                l.info("[Set Model Merging] Adding value {:x} to entry".format(val))
                 existing_entry['vals'].append(val)
         existing_entry['vals'].sort()
         return True
@@ -113,7 +113,7 @@ def add_config_entry(existing_models, model_type, entry_name, param_map):
 
     # Check for conflicting model assignments
     if entry_name in existing_models[model_type] and existing_models[model_type][entry_name] != param_map:
-        print("[WARNING] got conflicting model assignments from different states")
+        l.waring("[WARNING] got conflicting model assignments from different states")
         if 'conflicts' not in existing_models:
             existing_models['conflicts'] = {}
         if entry_name not in existing_models['conflicts']:

@@ -1,9 +1,12 @@
 import angr
 import claripy
+import logging
 
 from itertools import chain
 
 from .angr_utils import is_ast_mmio_address, contains_var, all_states, has_conditional_statements, state_vars_out_of_scope, state_contains_tracked_mmio_path_constraints, state_variables_involved_in_loop, in_scope_register_values
+
+l = logging.getLogger("DETECTION")
 
 MAX_SET_MODEL_VAL_NUM = 16
 
@@ -14,17 +17,17 @@ def check_is_passthrough_model(state, mmio_constrains_path, returned, vars_dead)
     """
 
     if mmio_constrains_path:
-        print("[PASSTHROUGH] [-] Path is constrained")
+        l.info("[PASSTHROUGH] [-] Path is constrained")
         return False
 
     if not vars_dead:
-        print("[PASSTHROUGH] [-] Vars not dead")
+        l.info("[PASSTHROUGH] [-] Vars not dead")
         return False
 
     if state.liveness.tracked_vars:
-        print("[PASSTHROUGH] [*] Checking vars in path")
+        l.info("[PASSTHROUGH] [*] Checking vars in path")
 
-        print("[PASSTHROUGH] [*] Vars: {}".format(state.liveness.tracked_vars))
+        l.info("[PASSTHROUGH] [*] Vars: {}".format(state.liveness.tracked_vars))
         mmio_write_actions = [ev for ev in state.history.actions
             if isinstance(ev, angr.state_plugins.sim_action.SimActionData)
                 and ev.action == "write" and is_ast_mmio_address(state, ev.addr)]
@@ -34,10 +37,10 @@ def check_is_passthrough_model(state, mmio_constrains_path, returned, vars_dead)
             all_vars_written = all_vars_written and any([contains_var(action.data, var) for action in mmio_write_actions])
 
         if all_vars_written:
-            print("[PASSTHROUGH] [+] All MMIO vars written to mmio location")
+            l.info("[PASSTHROUGH] [+] All MMIO vars written to mmio location")
             return True
 
-    print("[PASSTHROUGH] [-] Default case")
+    l.info("[PASSTHROUGH] [-] Default case")
     return False
 
 # ======= Constant Model =======
@@ -51,26 +54,26 @@ def check_is_constant_model(states):
     """
 
     if any([not state_vars_out_of_scope(state) for state in states]):
-        print("[CONST] [-] vars not dead")
+        l.info("[CONST] [-] vars not dead")
         return False
     else:
         paths_constrained = [state_contains_tracked_mmio_path_constraints(state) for state in states]
         if not all(paths_constrained):
             if any(paths_constrained):
-                print("[CONST] [-] Vars are dead and some some paths are constrained, but not all. We might be shadowed")
+                l.info("[CONST] [-] Vars are dead and some some paths are constrained, but not all. We might be shadowed")
                 return False
 
             known_unconditional_bbls = set()
             for state in states:
                 if has_conditional_statements(state, known_unconditional_bbls):
-                    print("[CONST] [-] Vars are dead but path is not constrained by MMIO for all states and we found conditionals. We might be shadowed")
+                    l.info("[CONST] [-] Vars are dead but path is not constrained by MMIO for all states and we found conditionals. We might be shadowed")
                     return False
 
             # There are no conditional statements, we are not shadowed and the variable is indeed not used
-            print("[CONST] [+] Variable is not used and no conditional statements may be shadowing us")
+            l.info("[CONST] [+] Variable is not used and no conditional statements may be shadowing us")
             return True
 
-    print("[CONST] got {} states, #tracked_mmio_vars: {}".format(len(states), list(map(lambda s: len(s.liveness.tracked_vars), states))))
+    l.info("[CONST] got {} states, #tracked_mmio_vars: {}".format(len(states), list(map(lambda s: len(s.liveness.tracked_vars), states))))
 
     # First collect a representative last and prev-to-last constraint, making sure they are the same amongst states along the way
     reference_var = None
@@ -84,7 +87,7 @@ def check_is_constant_model(states):
         
         # We are looking for a busy loop that gets exited by a single jump on the last variable meeting a condition
         if len(last_tracked_var_constraints) != 1:
-            print("[CONST] [-] More than one constraint on last variable, assuming non-constant")
+            l.info("[CONST] [-] More than one constraint on last variable, assuming non-constant")
             return False
 
         # We also need all states to have the same (presumably inevitable) exit condition
@@ -92,7 +95,7 @@ def check_is_constant_model(states):
         if normalized_last_constraint is None:
             normalized_last_constraint = curr_last_constraint
         elif not claripy.is_true(normalized_last_constraint == curr_last_constraint):
-            print("[CONST] [-] Encountered different exit conditions amongst states ('{}' != '{}')".format(normalized_last_constraint, curr_last_constraint))
+            l.info("[CONST] [-] Encountered different exit conditions amongst states ('{}' != '{}')".format(normalized_last_constraint, curr_last_constraint))
             return False
         
         if len(state.liveness.tracked_vars) == 1:
@@ -108,20 +111,20 @@ def check_is_constant_model(states):
             if normalized_prev_to_last_constraint is None:
                 normalized_prev_to_last_constraint = constraint
             elif not claripy.is_true(normalized_prev_to_last_constraint == constraint):
-                print("[CONST] [-] Encountered different previous-to-last constraint amongst states")
+                l.info("[CONST] [-] Encountered different previous-to-last constraint amongst states")
 
     if normalized_prev_to_last_constraint is None:
-        print("[CONST] [-] We have no previous constraint to compare exit condition against")
+        l.info("[CONST] [-] We have no previous constraint to compare exit condition against")
         return False
 
     # Now check that all previous conditions are exactly Not(exit condition)
     if not claripy.is_true(state.solver.simplify(
             normalized_last_constraint == claripy.Not(normalized_prev_to_last_constraint)
         )):
-        print("[CONST] [-] Not(prev-to-last constraint) != last constraint")
+        l.info("[CONST] [-] Not(prev-to-last constraint) != last constraint")
         return False
 
-    print("[CONST] [+] All checks done")
+    l.info("[CONST] [+] All checks done")
     return True
 
 # ======= Set Model =======
@@ -135,10 +138,10 @@ def check_and_gen_set_model(states):
     for state in states:
         # If not all variables are out of scope, we don't know whether they are still going to be checked later
         if not state_vars_out_of_scope(state):
-            print("[SET Model] [-] some states have live variables ({})".format(state))
+            l.info("[SET Model] [-] some states have live variables ({})".format(state))
             return None
         if state_variables_involved_in_loop(state):
-            print("[SET Model] [-] variable used in loop")
+            l.info("[SET Model] [-] variable used in loop")
             return None
 
     # Collect variables
@@ -157,7 +160,7 @@ def check_and_gen_set_model(states):
             guards.append(claripy.And(*curr_guards))
 
         if any(map(lambda guard: any(map(lambda state_restore_reg_bitvec: contains_var(guard, state_restore_reg_bitvec), state.liveness.base_snapshot.all_initial_bitvecs)), guards)):
-            print("[SET Model] [-] detected state-defined register in relevant jump guard, not assigning a set model")
+            l.info("[SET Model] [-] detected state-defined register in relevant jump guard, not assigning a set model")
             vals = None
             break
 
@@ -191,14 +194,14 @@ def check_and_gen_set_model(states):
         if vals is None:
             vals = curr_vals
         elif vals != curr_vals:
-            print("[SET Model] [-] got ambiguous sets")
+            l.info("[SET Model] [-] got ambiguous sets")
             return None
 
     if vals is None:
-        print("[SET Model] [-] could not find values")
+        l.info("[SET Model] [-] could not find values")
         return None
 
-    print("[SET Model]: [+] Got vals: {}".format(vals))
+    l.info("[SET Model]: [+] Got vals: {}".format(vals))
 
     # For single-valued sets, apply constant model
     if len(vals) == 1:
@@ -362,16 +365,16 @@ def detect_model(pc, simulation, is_timed_out=False, pre_fork_state=None):
         if all_vars_out_of_scope:
             is_passthrough = check_is_passthrough_model(state, constrains_path, returned, all_vars_out_of_scope)
         else:
-            print("[PASSTHROUGH] [-] Not all vars out of scope")
+            l.info("[PASSTHROUGH] [-] Not all vars out of scope")
 
         # 2. Check for bitextract model
         min_masks = compute_bitextract_mask(state)
-        print("Got minimal mask set: {}".format(min_masks)) # list(map(hex, min_masks)))
+        l.info("Got minimal mask set: {}".format(min_masks)) # list(map(hex, min_masks)))
         if min_masks:
             for var, masks in min_masks.items():
                 for mask in masks:
                     bitmask |= mask
-        print("State: {}\nReturned: {}\nVars dead: {}\nIs config reg: {}\nbitmask: {:x}".format(state, returned, all_vars_out_of_scope, is_passthrough, bitmask))
+        l.info("State: {}\nReturned: {}\nVars dead: {}\nIs config reg: {}\nbitmask: {:x}".format(state, returned, all_vars_out_of_scope, is_passthrough, bitmask))
 
     elif simulation.found:
         states = simulation.found
@@ -388,13 +391,13 @@ def detect_model(pc, simulation, is_timed_out=False, pre_fork_state=None):
                 is_passthrough = is_passthrough and curr_is_passthrough
             
             min_masks = compute_bitextract_mask(state)
-            print("Got minimal mask set: {}".format(min_masks)) # list(map(hex, min_masks)))
+            l.info("Got minimal mask set: {}".format(min_masks)) # list(map(hex, min_masks)))
             if min_masks:
                 for var, masks in min_masks.items():
                     for mask in masks:
                         bitmask |= mask
             
-            print("State: {}\nReturned: {}\nVars dead: {}\nIs config reg: {}\nbitmask: {:x}".format(state, returned, all_vars_out_of_scope, curr_is_passthrough, bitmask))
+            l.info("State: {}\nReturned: {}\nVars dead: {}\nIs config reg: {}\nbitmask: {:x}".format(state, returned, all_vars_out_of_scope, curr_is_passthrough, bitmask))
 
         set_vals = check_and_gen_set_model(states)
 
@@ -402,7 +405,7 @@ def detect_model(pc, simulation, is_timed_out=False, pre_fork_state=None):
 
     # We treat the config model in a special way here and ignore deep calls
     if not tracked_mmio_constrains_any_path and not is_passthrough and all(map(lambda state: state.globals['config_write_performed'], all_states(simulation))):
-        print("[PASSTHROUGH] [WARNING] Assigning low-confidence config model")
+        l.info("[PASSTHROUGH] [WARNING] Assigning low-confidence config model")
         is_passthrough = True
 
     model_config_map = create_model_config_map(pc, state, is_passthrough, is_constant, bitmask, set_vals)

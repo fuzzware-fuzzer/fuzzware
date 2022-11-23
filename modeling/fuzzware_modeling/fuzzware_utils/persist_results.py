@@ -10,7 +10,7 @@ def merge_model_conflict(model_type, existing_entry, new_entry):
     if model_type == "set":
         for val in new_entry['vals']:
             if val not in existing_entry['vals']:
-                print("[Set Model Merging] Adding value {:x} to entry".format(val))
+                l.info("[Set Model Merging] Adding value {:x} to entry".format(val))
                 existing_entry['vals'].append(val)
         existing_entry['vals'].sort()
         return True
@@ -62,7 +62,7 @@ def add_config_entry(existing_models, model_type, entry_name, param_map):
     # entry_name, param_map = list(model_entry.items())[0]
     # Check for conflicting model assignments
     if entry_name in existing_models[model_type] and existing_models[model_type][entry_name] != param_map:
-        print("[WARNING] got conflicting model assignments from different states")
+        l.warning("[WARNING] got conflicting model assignments from different states")
         if 'conflicts' not in existing_models:
             existing_models['conflicts'] = {}
         if entry_name not in existing_models['conflicts']:

@@ -3,16 +3,16 @@ This is the result from scraping architecture-specific register name lists from 
 
 TODO: Unify and replace this with archinfo
 """
-state_snapshot_reg_list = ['r0', 'r1', 'r2', 'r3', 'r4',
+STATE_SNAPSHOT_REG_LIST = ['r0', 'r1', 'r2', 'r3', 'r4',
         'r5', 'r6', 'r7', 'r8', 'r9',
         'r10', 'r11', 'r12', 'lr', 'pc',
         'sp', 'xpsr']
 
-scope_reg_names = ('r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r10', 'r11', 'r12', 'lr', 'sp', 'pc')
+SCOPE_REG_NAMES = ('r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r10', 'r11', 'r12', 'lr', 'sp', 'pc')
 
-regular_register_names = ('r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'lr', 'sp')
+REGULAR_REGISTER_NAMES = ('r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'lr', 'sp')
 
-newly_added_constraints_reg_names = ('r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r10', 'r11', 'r12', 'lr')
+NEWLY_ADDED_CONSTRAINTS_REG_NAMES = ('r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r10', 'r11', 'r12', 'lr')
 
 REG_NAME_PC = 'pc'
 REG_NAME_SP = 'sp'

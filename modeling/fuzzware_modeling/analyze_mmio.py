@@ -16,8 +16,8 @@ from .model_detection import detect_model, create_model_config_map_errored
 from .liveness_plugin import LivenessPlugin
 from .exploration_techniques import MMIOVarScoper, FunctionReturner, FirstStateSplitDetector, TimeoutDetector, LoopEscaper, StateExplosionDetector
 from .inspect_breakpoints import inspect_bp_track_newly_added_constraints, inspect_bp_trace_call, inspect_bp_trace_ret, inspect_bp_trace_liveness_reg, inspect_bp_trace_liveness_mem, inspect_cond_is_mmio_read, inspect_bp_mmio_intercept_read_after, inspect_bp_trace_reads, inspect_bp_trace_writes, inspect_bp_singleton_ensure_mmio, inspect_after_address_concretization
-from .arch_specific.arm_thumb_regs import regular_register_names
 from .arch_specific.arm_thumb_quirks import try_handling_decode_error, model_arch_specific
+from .arch_specific.arm_thumb_regs import REGULAR_REGISTER_NAMES
 from .logging_utils import set_log_levels
 
 l = logging.getLogger("ANA")
@@ -98,7 +98,7 @@ def setup_analysis(statefile, cfg=None):
     initial_state.globals['config_write_performed'] = False
 
     # Arch-specific reg constants
-    initial_state.globals['regular_reg_offsets'] = frozenset([initial_state.arch.get_register_offset(name) for name in regular_register_names])
+    initial_state.globals['regular_reg_offsets'] = frozenset([initial_state.arch.get_register_offset(name) for name in REGULAR_REGISTER_NAMES])
 
     # Make memory accesses show up in state histories
     initial_state.options.add(angr.options.TRACK_MEMORY_ACTIONS)

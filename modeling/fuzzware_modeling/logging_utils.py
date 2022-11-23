@@ -4,6 +4,7 @@ LOGGER_NAMES = (
     "ANA",
     "utils",
     "BASESTATE",
+    "DETECTION",
     "EXPLORE",
     "MMIO",
     "LIVENESS",

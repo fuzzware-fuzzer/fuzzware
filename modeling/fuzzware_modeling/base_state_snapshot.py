@@ -5,7 +5,7 @@ import re
 import angr, claripy
 
 from .arch_specific import arm_thumb_quirks
-from .arch_specific.arm_thumb_regs import state_snapshot_reg_list, translate_reg_name_to_vex_internal_name, leave_reg_untainted, REG_NAME_PC, REG_NAME_SP
+from .arch_specific.arm_thumb_regs import STATE_SNAPSHOT_REG_LIST, translate_reg_name_to_vex_internal_name, leave_reg_untainted, REG_NAME_PC, REG_NAME_SP
 from .arch_specific.arm_cortexm_mmio_ranges import DEFAULT_MMIO_RANGES, ARM_CORTEXM_MMIO_START, ARM_CORTEXM_MMIO_END
 from .angr_utils import contains_var
 from .fuzzware_utils.config import load_traces_for_state, get_mmio_ranges
@@ -114,7 +114,7 @@ class BaseStateSnapshot:
         with open(statefile, "r") as state_file:
             regs = {}
 
-            for name in state_snapshot_reg_list:
+            for name in STATE_SNAPSHOT_REG_LIST:
                 line = state_file.readline()
                 l.debug("Looking at line: '{}'".format(line.rstrip()))
                 val = int(reg_regex.match(line).group(1), 16)

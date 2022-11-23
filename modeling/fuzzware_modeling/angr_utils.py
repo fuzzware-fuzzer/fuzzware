@@ -5,7 +5,7 @@ import angr
 import logging
 l = logging.getLogger("utils")
 
-from .arch_specific.arm_thumb_regs import scope_reg_names, return_reg
+from .arch_specific.arm_thumb_regs import SCOPE_REG_NAMES, return_reg
 
 MAX_ACTIVE_STATES = 100
 
@@ -48,7 +48,7 @@ def in_scope_register_values(state):
     if state.liveness.returned:
         return [return_reg(state)]
     else:
-        return [getattr(state.regs, name) for name in scope_reg_names]
+        return [getattr(state.regs, name) for name in SCOPE_REG_NAMES]
 
 def is_mmio_address(state, addr):
     return state.liveness.base_snapshot.is_mmio_addr(addr)

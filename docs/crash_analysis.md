@@ -85,7 +85,7 @@ For example, to print the source buffer of a memcpy (assuming we configured `mem
 ```
 fuzzware replay <path_to_crashing_input> -b memcpy
 
-uc.mem.u8(uc.mem.r1, uc.mem.r2)
+uc.mem.u8(uc.regs.r1, uc.regs.r2)
 ```
 
 

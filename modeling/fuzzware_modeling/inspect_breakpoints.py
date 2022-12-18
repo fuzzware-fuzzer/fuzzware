@@ -156,3 +156,16 @@ def inspect_bp_trace_reads(state):
 def inspect_bp_trace_writes(state):
     is_mmio_access = is_ast_mmio_address(state, state.inspect.mem_write_address)
     l.info(f'Write {state.inspect.mem_write_expr} to {state.inspect.mem_write_address} with condition {state.inspect.mem_write_condition} from  {hex(state.addr)} is mmio write? -> {is_mmio_access}')
+
+# concretize addresses before access
+def inspect_bp_mem_read(state):
+    if state.satisfiable() and state.solver.unique(state.inspect.mem_read_address):
+        l.debug("concretizeing memory read address: %s", state.inspect.mem_read_address)
+        state.inspect.mem_read_address = state.solver.eval(state.inspect.mem_read_address)
+        l.debug("concretized read address: %s", state.inspect.mem_read_address)
+
+def inspect_bp_mem_write(state):
+    if state.satisfiable() and state.solver.unique(state.inspect.mem_write_address):
+        l.debug("concretizeing memory write address: %s", state.inspect.mem_write_address)
+        state.inspect.mem_write_address = state.solver.eval(state.inspect.mem_write_address)
+        l.debug("concretized write address: %s", state.inspect.mem_write_address)

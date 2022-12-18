@@ -15,7 +15,7 @@ from .fuzzware_utils.config import update_config_file, TRACE_NAME_TOKENS
 from .model_detection import detect_model, create_model_config_map_errored
 from .liveness_plugin import LivenessPlugin
 from .exploration_techniques import MMIOVarScoper, FunctionReturner, FirstStateSplitDetector, TimeoutDetector, LoopEscaper, StateExplosionDetector
-from .inspect_breakpoints import inspect_bp_track_newly_added_constraints, inspect_bp_trace_call, inspect_bp_trace_ret, inspect_bp_trace_liveness_reg, inspect_bp_trace_liveness_mem, inspect_cond_is_mmio_read, inspect_bp_mmio_intercept_read_after, inspect_bp_trace_reads, inspect_bp_trace_writes, inspect_bp_singleton_ensure_mmio, inspect_after_address_concretization
+from .inspect_breakpoints import inspect_bp_track_newly_added_constraints, inspect_bp_trace_call, inspect_bp_trace_ret, inspect_bp_trace_liveness_reg, inspect_bp_trace_liveness_mem, inspect_cond_is_mmio_read, inspect_bp_mmio_intercept_read_after, inspect_bp_trace_reads, inspect_bp_trace_writes, inspect_bp_singleton_ensure_mmio, inspect_after_address_concretization, inspect_bp_mem_read, inspect_bp_mem_write
 from .arch_specific.arm_thumb_quirks import try_handling_decode_error, model_arch_specific
 from .arch_specific.arm_thumb_regs import REGULAR_REGISTER_NAMES
 from .logging_utils import set_log_levels
@@ -89,6 +89,8 @@ def setup_analysis(statefile, cfg=None):
     # Breakpoints: Constraints
     initial_state.inspect.b('address_concretization', when=angr.BP_AFTER, action=inspect_after_address_concretization)
     initial_state.inspect.b('constraints', when=angr.BP_AFTER, action=inspect_bp_track_newly_added_constraints)
+    initial_state.inspect.b('mem_read', when=angr.BP_BEFORE, action=inspect_bp_mem_read)
+    initial_state.inspect.b('mem_write', when=angr.BP_BEFORE, action=inspect_bp_mem_write)
 
     # Set up state globals which are set by inspection breakpoints and exploration techniques
     initial_state.globals['dead_too_many_out_of_scope'] = False

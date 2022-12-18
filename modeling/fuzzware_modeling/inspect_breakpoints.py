@@ -151,8 +151,8 @@ def inspect_bp_singleton_ensure_mmio(state):
 
 def inspect_bp_trace_reads(state):
     is_mmio_access = is_ast_mmio_address(state, state.inspect.mem_read_address)
-    l.info(f'Read {state.inspect.mem_read_expr} at {state.inspect.mem_read_address} from  {hex(state.addr)} is mmio read? -> {is_mmio_access} {state.inspect.mem_read_expr}')
+    l.info(f'Read {state.inspect.mem_read_expr} at {state.inspect.mem_read_address} with condition {state.inspect.mem_read_condition} from  {hex(state.addr)} is mmio read? -> {is_mmio_access}')
 
 def inspect_bp_trace_writes(state):
     is_mmio_access = is_ast_mmio_address(state, state.inspect.mem_write_address)
-    l.info(f'Write {state.inspect.mem_write_expr} to {state.inspect.mem_write_address} from  {hex(state.addr)} is mmio write? -> {is_mmio_access} {state.inspect.mem_write_expr}')
+    l.info(f'Write {state.inspect.mem_write_expr} to {state.inspect.mem_write_address} with condition {state.inspect.mem_write_condition} from  {hex(state.addr)} is mmio write? -> {is_mmio_access}')

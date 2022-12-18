@@ -100,8 +100,13 @@ class LivenessPlugin(angr.SimStatePlugin):
         This sets up a stack frame to track local variable writes.
         """
         # Do not add any frames after we already
-        if self.stackframes:
-            self.stackframes.append(StackFrame(state.solver.eval(state.regs.sp)))
+        if not self.stackframes:
+            return
+        if not state.satisfiable():
+            l.warning("SimState not satisfiable during enter_function")
+            return
+
+        self.stackframes.append(StackFrame(state.solver.eval(state.regs.sp)))
 
     def leave_function(self, state):
         """
@@ -109,13 +114,17 @@ class LivenessPlugin(angr.SimStatePlugin):
 
         This deals with the cleanup of stack frames and their references.
         """
+        if not state.satisfiable():
+            l.warning("SimState not satisfiable during leave_function")
+            return
+
         l.warning("[%x] Returning from function", state.addr)
 
         # In case we already returned from the top level function, don't deal with stack writes anymore
         if not self.stackframes:
             return
 
-        # Pop stack frame and remove all remaining references to 
+        # Pop stack frame and remove all remaining references to
         curr_frame = self.stackframes.pop()
         for addr, size in curr_frame.tracked_addrs.items():
             contents = state.memory.load(addr, size, disable_actions=True, inspect=False)
@@ -203,7 +212,7 @@ class LivenessPlugin(angr.SimStatePlugin):
     def on_after_mmio_mem_read(self, read_addr, read_expr, read_len):
         """
         Called after memory is read.
-        
+
         This adds MMIO variables and possibly tracks them
         """
         addr = self.state.solver.eval(read_addr)

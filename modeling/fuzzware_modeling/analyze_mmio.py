@@ -200,6 +200,9 @@ def perform_analysis(statefile, cfg=None, is_debug=False, timeout=DEFAULT_TIMEOU
         timeout_detector_technique.timed_out = True
     elif timeout_detector_technique.timed_out:
         l.critical("Hit timeout")
+    elif simulation.errored:
+        l.critical("Errored states encountered")
+        simulation.errored[0].reraise()
 
     # Collect finished states
     # If unfinished states (active / deep_calls) are present, we will be in timeout case

@@ -40,3 +40,5 @@ def dump_bbl_starts_txt(out_file_path="valid_basic_blocks.txt"):
     with open(out_file_path, "wb") as f:
         for instr in sorted(instruction_starts):
             f.write("{:x}\n".format(instr).encode())
+            
+dump_bbl_starts_txt()

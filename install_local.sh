@@ -1,7 +1,7 @@
 #!/bin/bash
 VENV_NAME=fuzzware
 
-for i in python2 python3 automake redis-server tmux virtualenvwrapper.sh cmake clang clang++ git unzip; do
+for i in python3 automake redis-server tmux virtualenvwrapper.sh cmake clang clang++ git unzip; do
 
   T=$(which "$i" 2>/dev/null)
 

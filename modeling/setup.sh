@@ -9,13 +9,11 @@ echo "[*] Installing modeling component in venv '$modeling_venv_name'"
 MODELING_VENV_PYTHON3=${MODELING_VENV_PYTHON3:-/usr/bin/python3}
 
 # check whether installation is supported on local system due to python3 / angr compatibility
-$MODELING_VENV_PYTHON3 -c 'import collections; collections.MutableMapping' &>/dev/null || {
-    echo "[ERROR] Your python3 version is too high for an installation on your local system. \
-The angr version which we are using requires the now removed collections.MutableMapping to be available. \
-As a workaround, you may install an older version of python3 (<=3.9 should work) and set the MODELING_VENV_PYTHON3 environment variable to its path (currently, '$MODELING_VENV_PYTHON3' is used)."
+$MODELING_VENV_PYTHON3 -c 'import sys; assert sys.version_info >= (3,8)' &>/dev/null || {
+    echo "[ERROR] Your python3 version is too low for an installation on your local system."
     echo
-    echo "Bumping angr to a higher version is currently a TODO, as angr seems to behave differently than what we used during development and upgrading requires extensive re-testing of \
-the modeling outputs. However, pull requests are welcome. :-)"
+    echo "The version of angr which is used requires Python 3.8+."
+    echo "As a workaround, you may install a newer version of python3 (>=3.8 should work) and set the MODELING_VENV_PYTHON3 environment variable to its path (currently, '$MODELING_VENV_PYTHON3' is used)."
     exit 1
 }
 

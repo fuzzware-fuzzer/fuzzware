@@ -2,7 +2,7 @@ FROM ubuntu:22.04 as fuzzware-base
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y python3 python3-pip automake tmux redis wget autoconf sudo htop cmake clang vim unzip git && \
+    apt-get install -y python3 python3-pip automake tmux redis wget autoconf sudo htop cmake clang vim unzip git binutils-arm-none-eabi && \
     pip3 install virtualenv virtualenvwrapper cython setuptools
 
 ENV FUZZWARE=/home/user/fuzzware

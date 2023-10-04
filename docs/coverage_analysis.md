@@ -18,7 +18,8 @@ For a machine-readable coverage format, we can also dump a file:
 fuzzware cov --out cov.txt
 ```
 
-This will dump a list of the covered basic blocks in hexadecimal ascii format to `cov.txt`. We can import this file in a coverage visualization such as [lighthouse](https://github.com/gaasedelen/lighthouse) (for IDA) or [dragondance](https://github.com/0ffffffffh/dragondance) (for Ghidra).
+This will dump a list of the covered basic blocks in hexadecimal ascii format to `cov.txt`. We can import this file in a coverage visualization such as [lighthouse](https://github.com/gaasedelen/lighthouse) (for IDA) or [dragondance](https://github.com/0ffffffffh/dragondance)/[Cartographer](https://github.com/nccgroup/Cartographer) (for Ghidra).
+For Cartographer, there is a simple [conversion script](../scripts/cartographer_cov_conversion.py) that creates a compatible [EZCOV file](https://github.com/nccgroup/Cartographer/blob/main/EZCOV.md).
 
 ## Searching for Specific Coverage
 

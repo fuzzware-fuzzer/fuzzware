@@ -9,7 +9,7 @@ with open(sys.argv[1], "r") as f:
 
 out = "EZCOV VERSION: 1\n"
 for addr in addrs:
-    out += f"{hex(addr)}, 4, [ MAIN ]\n"
+    out += f"{hex(addr)}, 1, [ MAIN ]\n"
 
 with open(sys.argv[2], "w") as f:
     f.write(out)

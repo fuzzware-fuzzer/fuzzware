@@ -2,5 +2,6 @@ click==7.1.2
 rq~=1.16
 PyYAML>=5.3
 intelhex
+capstone==5.0.3
 angr==9.2.61
 IPython

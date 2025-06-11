@@ -7,7 +7,8 @@ RUN apt-get update && \
 
 ENV FUZZWARE=/home/user/fuzzware
 ENV WORKON_HOME=/home/user/.virtualenvs
-RUN useradd -l -u 1000 -d /home/user user && \
+ARG USERID=1000
+RUN useradd -l -u $USERID -d /home/user user && \
     mkdir -p $FUZZWARE /home/user/.cache && \
     chown -R user:user /home/user && \
     echo "user ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers

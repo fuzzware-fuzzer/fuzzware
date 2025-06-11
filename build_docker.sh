@@ -16,4 +16,4 @@ if [[ ! -e emulator/setup.sh || ! -e pipeline/setup.sh ]]; then
     echo "[ERROR] Could not pull emulator and pipeline repos, exiting."; exit 1
 fi
 
-docker build -t "fuzzware:$TAG" "$DIR"
+docker build -t "fuzzware:$TAG" --build-arg "USERID=$(id -u)" "$DIR"

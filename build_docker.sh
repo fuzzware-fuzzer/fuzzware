@@ -1,14 +1,16 @@
 #!/bin/bash
 DIR="$(dirname "$(readlink -f "$0")")"
+TAG=""
+IMAGE=fuzzware
 
 if [[ -z "$1" ]]; then
     echo "[INFO] No cmd-line-options provided, building default-image"
     if [[ ! -e emulator/setup.sh || ! -e pipeline/setup.sh ]]; then
         "$DIR"/update.sh
     fi
-    TAG="latest"
+    TAG=latest
 else
-    echo "[INFO] Building fuzzware-image with tag: $1"
+    echo "[INFO] Building fuzzware-image with emulator-commit: $1"
     TAG=$1
 fi
 

@@ -1,0 +1,21 @@
+# Fuzzware Project Artifacts
+**/fuzzware-project*
+**/dump.rdb*
+
+# Analysis files
+**/core.*
+**/*.idb
+**/*.id0
+**/*.id1
+**/*.id2
+**/*.nam
+**/*.til
+**/*.idb
+
+
+**.egg-info*
+**/__pycache__/*
+**PKG-INFO*
+
+# IDE
+**/.vscode

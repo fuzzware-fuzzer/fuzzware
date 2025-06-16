@@ -2,7 +2,7 @@ FROM ubuntu:22.04 as fuzzware-base
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y python3 python3-pip automake tmux redis wget autoconf sudo htop cmake clang vim unzip git binutils-arm-none-eabi && \
+    apt-get install -y python3 python3-pip automake tmux redis wget autoconf sudo htop cmake clang vim unzip git binutils-arm-none-eabi curl && \
     pip3 install virtualenv virtualenvwrapper cython setuptools
 
 ENV FUZZWARE=/home/user/fuzzware
@@ -21,6 +21,11 @@ RUN USER=user GROUP=user VERSION=0.5.1 && \
     mkdir -p /etc/fixuid && \
     printf "user: $USER\ngroup: $GROUP\npaths:\n  - /home/user/.cache\n" > /etc/fixuid/config.yml
 
+# Install cargo for user
+USER user
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path --default-toolchain 1.81.0
+ENV PATH="${PATH}:/home/user/.cargo/bin"
+ENV LD_LIBRARY_PATH="/home/user/.cargo/bin/"
 
 # Modeling container
 FROM fuzzware-base as fuzzware-modeling
@@ -43,21 +48,28 @@ USER root
 COPY --chown=user pipeline/requirements.txt /requirements-pipeline.txt
 COPY --chown=user emulator/requirements.txt /requirements-emulator.txt
 RUN pip3 install -r /requirements-emulator.txt -r /requirements-pipeline.txt
+
+# Build pipeline components
+USER user
+COPY --chown=user pipeline $FUZZWARE/pipeline
+RUN cargo build --release --manifest-path $FUZZWARE/pipeline/dma_modeling/Cargo.toml
+
 # Build and install emulator dependencies: afl, unicorn
 COPY --chown=user emulator/get_afl.sh emulator/afl.patch $FUZZWARE/emulator/
 COPY --chown=user emulator/unicorn/ $FUZZWARE/emulator/unicorn
 WORKDIR $FUZZWARE/emulator
 USER user
+
 RUN ./get_afl.sh && \
     UNICORN_QEMU_FLAGS="--python=/usr/bin/python3" make -C $FUZZWARE/emulator/afl clean all && \
-    make -C $FUZZWARE/emulator/AFLplusplus clean all && \
+    AFL_NO_X86=1 make -f GNUmakefile -C $FUZZWARE/emulator/AFLplusplus clean test_shm test_python ready afl-fuzz afl-showmap afl-tmin afl-gotcpu && \
     cd $FUZZWARE/emulator/unicorn && \
     ./build_unicorn.sh
 
 # Then copy and install emulator and pipeline
 COPY --chown=user emulator $FUZZWARE/emulator
 RUN make -C $FUZZWARE/emulator/harness/fuzzware_harness/native clean all
-COPY --chown=user pipeline $FUZZWARE/pipeline
+
 USER root
 RUN pip3 install -e $FUZZWARE/emulator/harness && \
     pip3 install -e $FUZZWARE/pipeline

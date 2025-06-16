@@ -113,7 +113,7 @@ def add_config_entry(existing_models, model_type, entry_name, param_map):
 
     # Check for conflicting model assignments
     if entry_name in existing_models[model_type] and existing_models[model_type][entry_name] != param_map:
-        l.waring("[WARNING] got conflicting model assignments from different states")
+        l.warning("[WARNING] got conflicting model assignments from different states")
         if 'conflicts' not in existing_models:
             existing_models['conflicts'] = {}
         if entry_name not in existing_models['conflicts']:

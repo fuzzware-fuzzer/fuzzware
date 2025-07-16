@@ -26,7 +26,7 @@ RUN USER=user GROUP=user VERSION=0.5.1 && \
 FROM fuzzware-base as fuzzware-modeling
 USER user
 # First copy and install requirements
-COPY modeling/requirements.txt /requirements-modeling.txt
+COPY --chown=user modeling/requirements.txt /requirements-modeling.txt
 RUN python3 -m virtualenv --python=/usr/bin/python3 $WORKON_HOME/fuzzware-modeling && \
     . $WORKON_HOME/fuzzware-modeling/bin/activate && \
     pip install -r /requirements-modeling.txt
@@ -40,8 +40,8 @@ RUN . $WORKON_HOME/fuzzware-modeling/bin/activate && \
 FROM fuzzware-base as fuzzware
 USER root
 # As above install requirements first
-COPY pipeline/requirements.txt /requirements-pipeline.txt
-COPY emulator/requirements.txt /requirements-emulator.txt
+COPY --chown=user pipeline/requirements.txt /requirements-pipeline.txt
+COPY --chown=user emulator/requirements.txt /requirements-emulator.txt
 RUN pip3 install -r /requirements-emulator.txt -r /requirements-pipeline.txt
 # Build and install emulator dependencies: afl, unicorn
 COPY --chown=user emulator/get_afl.sh emulator/afl.patch $FUZZWARE/emulator/

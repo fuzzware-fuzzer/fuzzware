@@ -79,7 +79,7 @@ A docker image `"fuzzware"` is built which contains all the necessary binaries a
 ```
 
 ## Fuzzware on Host
-For a local setup, your system will have to have a list of local tooling installed to handle building unicorn, setting up virtual environments and finally running different pipeline components. You can see how to set those dependencies up in the [Docker file](dockerfile). Without installing all the dependencies first, different steps of the installation process will complain and you will be able to install them one by one.
+For a local setup, your system will have to have a list of local tooling installed to handle building unicorn, setting up virtual environments and finally running different pipeline components. You can see how to set those dependencies up in the [Docker file](Dockerfile). Without installing all the dependencies first, different steps of the installation process will complain and you will be able to install them one by one.
 
 To install locally:
 ```
@@ -165,7 +165,7 @@ scripts/set_inotify_limits.sh
 ```
 
 ## Missing Local Dependencies
-In case things are missing in your local setup, refer to [the dockerfile](dockerfile) to figure out which package you might have missed or use a docker setup.
+In case things are missing in your local setup, refer to [the dockerfile](Dockerfile) to figure out which package you might have missed or use a docker setup.
 
 ## Too Recent Python Version (>=3.10)
 We based our MMIO modeling component on angr version 8.19.10.30. We learned just before the publication of the prototype that this version of angr only supports Python versions lower than 3.10. We added a detection for this into the install scripts and let you install based on a previous version of Python using the environment variable `MODELING_VENV_PYTHON3`.

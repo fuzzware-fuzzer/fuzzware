@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as fuzzware-base
+FROM ubuntu:22.04 AS fuzzware-base
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -23,7 +23,7 @@ RUN USER=user GROUP=user VERSION=0.5.1 && \
 
 
 # Modeling container
-FROM fuzzware-base as fuzzware-modeling
+FROM fuzzware-base AS fuzzware-modeling
 USER user
 # First copy and install requirements
 COPY --chown=user modeling/requirements.txt /requirements-modeling.txt
@@ -37,7 +37,7 @@ RUN . $WORKON_HOME/fuzzware-modeling/bin/activate && \
 
 
 # Main container
-FROM fuzzware-base as fuzzware
+FROM fuzzware-base AS fuzzware
 USER root
 # As above install requirements first
 COPY --chown=user pipeline/requirements.txt /requirements-pipeline.txt
@@ -67,5 +67,5 @@ COPY --chown=user --from=fuzzware-modeling $WORKON_HOME/ $WORKON_HOME/
 
 USER user:user
 WORKDIR $FUZZWARE/targets
-entrypoint ["fixuid", "-q"]
+ENTRYPOINT ["fixuid", "-q"]
 # entrypoint ["fuzzware-start-tmux-docker"]

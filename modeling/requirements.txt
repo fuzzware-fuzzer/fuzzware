@@ -5,3 +5,4 @@ intelhex
 capstone==5.0.3
 angr==9.2.61
 IPython
+pycparser==2.21
